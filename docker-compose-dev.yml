@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  web_develop:
+    container_name: auction_api_dev
+    image: "mcr.microsoft.com/dotnet/sdk:5.0"
+    volumes:
+      - ./:/app
+    command: dotnet watch --project ./Api run --urls "http://0.0.0.0:80"    
+    ports:
+      - "8081:80" 

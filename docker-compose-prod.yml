@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  api_test:
+    container_name: api_test
+    build:
+      context: .
+      dockerfile: ./Api/docker/Dockerfile
+    ports:
+    - "8080:80"
