@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using UseCases.Account;
+using UseCases.Shared;
 
 namespace Api.Extensions
 {
@@ -22,6 +23,7 @@ namespace Api.Extensions
             });
 
             services.AddMediatR(typeof(Register.Handler).Assembly);
+            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
             return services;
         }

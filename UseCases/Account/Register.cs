@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Domain;
 using FluentValidation;
 using MediatR;
@@ -13,50 +12,47 @@ namespace UseCases.Account
 {
     public class Register
     {
-        public class Command : IRequest<Result<Unit>>
+        public class Command : IRequest<Result<UserDto>>
         {
-            public RegisterDto User { get; set; }
+            public RegisterDto Dto { get; set; }
         }
         
         public class CommandValidator : AbstractValidator<Command> 
         {
-            public CommandValidator()
+            public CommandValidator(UserManager<User> userManager)
             {
-                RuleFor(x => x.User).SetValidator(new UserRegisterValidator());
+                RuleFor(x => x.Dto).SetValidator(new UserRegisterValidator(userManager));
             }
         }
         
-        public class Handler : IRequestHandler<Command, Result<Unit>>
+        public class Handler : IRequestHandler<Command, Result<UserDto>>
         {
             private readonly UserManager<User> _userManager;
+            private readonly IMapper _mapper;
 
-            public Handler(UserManager<User> userManager)
+            public Handler(UserManager<User> userManager, IMapper mapper)
             {
                 _userManager = userManager;
+                _mapper = mapper;
             }
             
-            public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Result<UserDto>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var user = new User
                 {
-                    FirstName = request.User.FirstName,
-                    LastName = request.User.LastName,
-                    Email = request.User.Email,
-                    UserName = request.User.Username
+                    FirstName = request.Dto.FirstName,
+                    LastName = request.Dto.LastName,
+                    Email = request.Dto.Email,
+                    UserName = request.Dto.Username
                 };
 
-                var result = await _userManager.CreateAsync(user, request.User.Password);
+                var result = await _userManager.CreateAsync(user, request.Dto.Password);
 
-                if (result.Succeeded) return Result<Unit>.Success(Unit.Value);
+                var userToReturn = _mapper.Map<UserDto>(user);
+                
+                if (!result.Succeeded) return Result<UserDto>.Failure("Some problems with registration...");
 
-                if (!result.Succeeded)
-                {
-                    var errors = result.Errors.Select(error => error.Description).ToList();
-                    // return Result<Unit>.Failure(JsonSerializer.Serialize(errors));
-                    return Result<Unit>.Failure(errors);
-                }
-
-                return Result<Unit>.Success(Unit.Value);
+                return Result<UserDto>.Success(userToReturn);
             }
         }
     }

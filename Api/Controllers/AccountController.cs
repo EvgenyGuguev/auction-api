@@ -9,9 +9,9 @@ namespace Api.Controllers
     {
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> RegisterUser(RegisterDto user)
+        public async Task<IActionResult> RegisterUser(RegisterDto dto)
         {
-            return HandleResult(await Mediator.Send(new Register.Command {User = user}));
+            return HandleResult(await Mediator.Send(new Register.Command {Dto = dto}));
         }
     }
 }
