@@ -9,6 +9,7 @@ namespace UseCases.Shared
         public MappingProfiles()
         {
             CreateMap<User, UserDto>();
+            CreateMap<RegisterDto, User>();
         }
     }
 }

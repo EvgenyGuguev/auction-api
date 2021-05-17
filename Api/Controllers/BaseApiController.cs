@@ -6,6 +6,7 @@ using UseCases.Shared;
 namespace Api.Controllers
 {
     [ApiController]
+    [Route("api/[controller]")]
     public class BaseApiController : ControllerBase
     {
         private IMediator _mediator;

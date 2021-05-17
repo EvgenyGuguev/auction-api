@@ -4,7 +4,6 @@ using UseCases.Account;
 
 namespace Api.Controllers
 {
-    [Route("api/account")]
     public class AccountController : BaseApiController
     {
         [HttpPost]
