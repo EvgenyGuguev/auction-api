@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using Domain;
+using FluentAssertions;
 using Moq;
 using UseCases.Account;
 using UseCases.Shared;
@@ -13,51 +13,43 @@ namespace Tests.UseCases.Account
     public class AccountControllerTests : MainAccountTest
     {
         [Fact]
-        public async Task CreateNewUserWithUserManager_WithCorrectCredentials_ReturnNewUser()
+        public async Task CreateNewUserFromUserManager_WithCorrectCredentials_ReturnCreatedUser()
         {
-            var mockManager = MockUserManager(Users).Object;
+            var mockManager = ConfiguredMockUserManager(Users).Object;
             var newUser = new User { FirstName = "FirstName3", LastName = "LastName3", Email = "test3@email.com", UserName = "Ghost"};
 
             await mockManager.CreateAsync(newUser, "Password1234");
             
-            Assert.Equal(3, Users.Count);
-            Assert.Equal("FirstName3", Users.Last().FirstName);
+            Users.Count.Should().Be(3);
+            Users.Last().FirstName.Should().BeEquivalentTo("FirstName3");
         }
         
         [Fact]
-        public async Task RegisterMediatorCommandTest()
+        public async Task RegisterAccountCommand_WithCorrectRequest_ReturnsExpectedResult()
         {
-            Mediator
+            MockMediator
                 .Setup(m => m.Send(It.IsAny<Register.Command>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(It.IsAny<Result<UserDto>>());
             
-            await Mediator.Object.Send(new Register.Command());
+            await MockMediator.Object.Send(new Register.Command());
 
-            Mediator.Verify(x => 
+            MockMediator.Verify(x => 
                 x.Send(It.IsAny<Register.Command>(), It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
-        public async Task RegisterAccountHandler_WithCorrectRequest_ReturnCorrectNewAccount()
+        public async Task RegisterAccountHandler_WithCorrectRequest_ReturnsRegisteredAccount()
         {
-            var mockManager = MockUserManager(Users).Object;
-            var mockMapper = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile(new MappingProfiles());
-            });
-            var mapper = mockMapper.CreateMapper();
-            
+            var mockManager = ConfiguredMockUserManager(Users).Object;
             var commandRequest = new RegisterDto 
-                { FirstName = "FirstName3", LastName = "LastName3", Email = "test3@email.com", Username = "Ghost"};
+                { FirstName = "FirstName3", LastName = "LastName3", Email = "test3@email.com", Username = "UserName"};
 
-            var sut = new Register.Handler(mockManager, mapper);
+            var sut = new Register.Handler(mockManager, TestMapper);
             var result = await sut.Handle(
                 new Register.Command {Dto = commandRequest}, default);
-
-            Assert.NotNull(result);
-            Assert.IsType<Result<UserDto>>(result);
-            Assert.IsType<UserDto>(result.Value);
-            Assert.Equal("Ghost", result.Value.Username);
+            
+            result.Should().BeOfType<Result<UserDto>>();
+            result.Value.Username.Should().BeEquivalentTo("UserName");
         }
     }
 }

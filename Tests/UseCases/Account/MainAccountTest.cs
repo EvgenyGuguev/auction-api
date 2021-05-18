@@ -1,15 +1,22 @@
 using System;
 using System.Collections.Generic;
+using AutoMapper;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Moq;
+using UseCases.Shared;
 
 namespace Tests.UseCases.Account
 {
     public class MainAccountTest
     {
-        protected readonly Mock<IMediator> Mediator = new Mock<IMediator>();
+        protected readonly Mock<IMediator> MockMediator = new();
+        
+        protected readonly IMapper TestMapper = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new MappingProfiles());
+        }).CreateMapper();
         
         protected readonly List<User> Users = new()
         {
@@ -19,7 +26,7 @@ namespace Tests.UseCases.Account
                 LastName = "LastName2", Email = "test2@email.com", UserName = "Test2"}
         };
                 
-        protected static Mock<UserManager<TUser>> MockUserManager<TUser>(ICollection<TUser> ls) where TUser : class
+        protected static Mock<UserManager<TUser>> ConfiguredMockUserManager<TUser>(ICollection<TUser> ls) where TUser : class
         {
             var store = new Mock<IUserStore<TUser>>();
             var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, null, null);
