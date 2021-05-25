@@ -15,15 +15,15 @@ namespace UseCases.Account
         {
             public RegisterDto Dto { get; set; }
         }
-        
-        public class CommandValidator : AbstractValidator<Command> 
+
+        public class CommandValidator : AbstractValidator<Command>
         {
             public CommandValidator(UserManager<User> userManager)
             {
                 RuleFor(x => x.Dto).SetValidator(new UserRegisterValidator(userManager));
             }
         }
-        
+
         public class Handler : IRequestHandler<Command, Result<UserDto>>
         {
             private readonly UserManager<User> _userManager;
@@ -34,7 +34,7 @@ namespace UseCases.Account
                 _userManager = userManager;
                 _mapper = mapper;
             }
-            
+
             public async Task<Result<UserDto>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var user = new User
@@ -48,10 +48,10 @@ namespace UseCases.Account
                 var result = await _userManager.CreateAsync(user, request.Dto.Password);
 
                 var userToReturn = _mapper.Map<UserDto>(user);
-                
-                if (!result.Succeeded) return Result<UserDto>.Failure("Some problems with registration...");
 
-                return Result<UserDto>.Success(userToReturn);
+                return result.Succeeded
+                    ? Result<UserDto>.Success(userToReturn)
+                    : Result<UserDto>.Failure("Some problems with registration...");
             }
         }
     }

@@ -1,3 +1,4 @@
+using Api.Services;
 using DataAccess;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,8 @@ namespace Api.Extensions
 
             services.AddMediatR(typeof(Register.Handler).Assembly);
             services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
+            services.AddScoped<AccountService>();
 
             return services;
         }

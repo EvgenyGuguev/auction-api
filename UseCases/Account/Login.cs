@@ -16,7 +16,7 @@ namespace UseCases.Account
         {
             public LoginDto Dto { get; set; }
         }
-        
+
         public class QueryValidator : AbstractValidator<Query>
         {
             public QueryValidator()
@@ -24,7 +24,7 @@ namespace UseCases.Account
                 RuleFor(x => x.Dto).SetValidator(new UserLoginValidator());
             }
         }
-        
+
         public class Handler : IRequestHandler<Query, Result<User>>
         {
             private readonly UserManager<User> _userManager;
@@ -35,7 +35,7 @@ namespace UseCases.Account
                 _userManager = userManager;
                 _signInManager = signInManager;
             }
-            
+
             public async Task<Result<User>> Handle(Query request, CancellationToken cancellationToken)
             {
                 var user = await _userManager.Users
@@ -46,9 +46,9 @@ namespace UseCases.Account
                 var result = await _signInManager
                     .CheckPasswordSignInAsync(user, request.Dto.Password, false);
 
-                if (result.Succeeded) return Result<User>.Success(user);
-                
-                return Result<User>.Failure("Unauthorized");
+                return result.Succeeded
+                    ? Result<User>.Success(user)
+                    : Result<User>.Failure("Unauthorized");
             }
         }
     }

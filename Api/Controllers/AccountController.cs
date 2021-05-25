@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Api.Services;
-using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UseCases.Account;
@@ -10,14 +9,14 @@ namespace Api.Controllers
     [AllowAnonymous]
     public class AccountController : BaseApiController
     {
-        private readonly AuthTokenService _tokenService;
+        private readonly AccountService _accountService;
 
-        public AccountController(AuthTokenService tokenService)
+        public AccountController(AccountService accountService)
         {
-            _tokenService = tokenService;
+            _accountService = accountService;
         }
+
         [HttpPost("register")]
-        // [Route("register")]
         public async Task<IActionResult> RegisterUser(RegisterDto dto)
         {
             return HandleResult(await Mediator.Send(new Register.Command {Dto = dto}));
@@ -26,23 +25,22 @@ namespace Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser(LoginDto dto)
         {
-            var loginQueryResult = await Mediator.Send(new Login.Query {Dto = dto});
+            var user = await Mediator.Send(new Login.Query {Dto = dto});
 
-            if (loginQueryResult.Value == null) return Unauthorized();
+            if (user.Value == null) return Unauthorized();
 
-            return Ok(CreateUserResponse(loginQueryResult.Value));
+            return Ok(_accountService.LoginResponse(user.Value));
         }
 
-        private UserDto CreateUserResponse(User user)
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCurrentUser()
         {
-            return new UserDto
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Username = user.UserName,
-                Token = _tokenService.CreateToken(user)
-            };
+            var user = await Mediator.Send(new CurrentUser.Query());
+
+            if (user.Value == null) return Unauthorized();
+
+            return Ok(_accountService.CurrentUserResponse(user.Value));
         }
     }
 }
