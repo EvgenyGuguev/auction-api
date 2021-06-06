@@ -6,7 +6,6 @@ using UseCases.Account;
 
 namespace Api.Controllers
 {
-    [AllowAnonymous]
     public class AccountController : BaseApiController
     {
         private readonly AccountService _accountService;
@@ -16,12 +15,14 @@ namespace Api.Controllers
             _accountService = accountService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(RegisterDto dto)
         {
             return HandleResult(await Mediator.Send(new Register.Command {Dto = dto}));
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser(LoginDto dto)
         {
@@ -31,8 +32,7 @@ namespace Api.Controllers
 
             return Ok(_accountService.LoginResponse(user.Value));
         }
-
-        [Authorize]
+        
         [HttpGet]
         public async Task<IActionResult> GetCurrentUser()
         {

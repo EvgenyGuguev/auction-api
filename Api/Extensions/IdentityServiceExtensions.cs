@@ -20,6 +20,7 @@ namespace Api.Extensions
                     opt.Password.RequiredLength = 10;
                     opt.User.RequireUniqueEmail = true;
                 })
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<DataContext>()
                 .AddSignInManager<SignInManager<User>>();
             
