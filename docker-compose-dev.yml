@@ -19,3 +19,38 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: auction
+      
+  elasticsearch:
+    container_name: auction_elasticsearch_dev
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    environment:
+      - node.name=auction-api-es
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    depends_on:
+      - auction_api_postgres
+
+  kibana:
+    container_name: auction_kibana_dev
+    image: docker.elastic.co/kibana/kibana:7.13.1
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      
+volumes:
+  es-data:
+    driver: local
