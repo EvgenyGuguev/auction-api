@@ -9,10 +9,12 @@ namespace Api.Controllers
     public class AccountController : BaseApiController
     {
         private readonly AccountService _accountService;
+        private readonly AuthTokenService _tokenService;
 
-        public AccountController(AccountService accountService)
+        public AccountController(AccountService accountService, AuthTokenService tokenService)
         {
             _accountService = accountService;
+            _tokenService = tokenService;
         }
 
         [AllowAnonymous]
@@ -30,7 +32,19 @@ namespace Api.Controllers
 
             if (user.Value == null) return Unauthorized();
 
-            return Ok(_accountService.LoginResponse(user.Value));
+            var refreshToken = await _tokenService.SetRefreshTokenCookie(user.Value);
+            return Ok(_accountService.LoginResponse(user.Value, refreshToken.Token));
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(RefreshTokenDto dto)
+        {
+            var user = await Mediator.Send(new RefreshToken.Query {Dto = dto});
+            if (user.Value == null) return Unauthorized();
+            if (user.Error != null) return Unauthorized();
+            
+            var refreshToken = await _tokenService.SetRefreshTokenCookie(user.Value);
+            return Ok(_accountService.LoginResponse(user.Value, refreshToken.Token));
         }
         
         [HttpGet]

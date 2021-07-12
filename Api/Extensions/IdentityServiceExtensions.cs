@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Api.Services;
 using DataAccess;
@@ -34,7 +35,9 @@ namespace Api.Extensions
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = key,
                         ValidateIssuer = false,
-                        ValidateAudience = false
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
             

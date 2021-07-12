@@ -12,12 +12,13 @@ namespace Api.Services
             _tokenService = tokenService;
         }
 
-        public AuthDto LoginResponse(User user)
+        public AuthDto LoginResponse(User user, string refreshToken)
         {
             return new()
             {
                 Success = true,
-                Token = _tokenService.CreateToken(user)
+                Token = _tokenService.CreateToken(user),
+                RefreshToken = refreshToken
             };
         }
 
